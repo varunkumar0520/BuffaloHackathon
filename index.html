@@ -3,48 +3,36 @@
 <head>
   <meta charset="utf-8">
   <title>Heatmap Overlay on Image using D3.js</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body {
       margin: 0;
     }
 
+    #page1,
+    #page2 {
+      max-width: 100%;
+      padding: 20px;
+    }
+
     /* Tab container styles */
     .tab-container {
       display: flex;
-      max-width: 347px;
       justify-content: space-between;
+      margin-bottom: 20px;
     }
 
     .tab-container .tab {
+      flex-basis: 50%;
       padding: 10px 10px;
       background-color: #e0e0e0;
       border: none;
-      margin: 0px;
       font-size: 16px;
-      width: 50%;
       cursor: pointer;
       text-align: center;
     }
 
-    #page1 {
-      width: 350px;
-    }
-    
-    #page2 {
-      margin-bottom: 20px;
-    }
-    
-    /* Tab styles */
-    #page2.tab {
-      padding: 10px 20px;
-      background-color: #e0e0e0;
-      border: none;
-      margin: 0px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    
     .tab.active {
       background-color: #2196F3;
       color: #fff;
@@ -58,11 +46,10 @@
       border-top: none;
       border-radius: 0 5px 5px 5px;
     }
-    
+
     .floor-content.active {
       display: block;
     }
-    
 
     #exhibit-list {
       list-style: none;
@@ -90,6 +77,16 @@
       border-radius: 5px;
     }
 
+    /* Responsive styles */
+    @media (max-width: 480px) {
+      .tab-container {
+        flex-wrap: wrap;
+      }
+
+      .tab-container .tab {
+        flex-basis: 100%;
+      }
+    }
   </style>
 </head>
 <body>
@@ -143,10 +140,8 @@
       </li>
       <!-- Add more list items as needed -->
     </ul>
-    
-    
   </div>
-    
+
   <div id="page2">
     <div class="tab-container">
       <div class="tab active" data-floor="1">Floor 1</div>
@@ -154,10 +149,9 @@
       <div class="tab" data-floor="3">Floor 3</div>
       <div class="tab" data-floor="4">Floor 4</div>
     </div>
-    <div id="heatmap-container">
-    </div>
+    <div id="heatmap-container"></div>
   </div>
-  
+
   <script>
     // Image dimensions
     var imageWidth = 320;
@@ -168,7 +162,7 @@
     .attr("width", imageWidth)
     .attr("height", imageHeight)
     .attr("padding", "20px");
-    
+
     var page = 2;
 
     // Data for the heatmap
@@ -177,16 +171,21 @@
     var img = svg.append("image")
       .attr("xlink:href", "floor1.jpg")
       .attr("width", "100%");
-      // .attr("height", imageHeight);
+
     var page1 = document.getElementById("page1");
-    page1.style.display = "none";
     var page2 = document.getElementById("page2");
+    var page1tab = document.getElementById("page1tab");
+    var page2tab = document.getElementById("page2tab");
+
+    page1.style.display = "none";
+
     page1tab.addEventListener("click", function() {
       page1tab.classList.add("active");
       page2tab.classList.remove("active");
       page1.style.display = "block";
       page2.style.display = "none";
     });
+
     page2tab.addEventListener("click", function() {
       page2tab.classList.add("active");
       page1tab.classList.remove("active");
@@ -194,7 +193,7 @@
       page1.style.display = "none";
     });
 
-    var tabs = document.querySelectorAll("#page2    .tab-container .tab");
+    var tabs = document.querySelectorAll("#page2 .tab-container .tab");
     for (var i = 0; i < tabs.length; i++) {
       tabs[i].addEventListener("click", function() {
         var floor = this.getAttribute("data-floor");
@@ -203,23 +202,22 @@
     }
 
     function switchPage() {
-      if(page == 1) {
-        page == 2;
+      if (page == 1) {
+        page = 2;
       } else {
-        page == 1;
+        page = 1;
       }
 
-      if(page == 1) {
+      if (page == 1) {
         page1.style.display = 'block';
         page2.style.display = 'none';
       } else {
-        page1.style.display = 'none';
+        page1.style.display ='none';
         page2.style.display = 'block';
       }
     }
 
     function showFloor(floor) {
-
       // Deactivate all tabs
       for (var i = 0; i < tabs.length; i++) {
         tabs[i].classList.remove("active");
@@ -228,27 +226,23 @@
       var selectedTab = document.querySelector('.tab[data-floor="' + floor + '"]');
       selectedTab.classList.add("active");
 
-      img.attr("xlink:href", "floor" + floor + ".jpg")
+      img.attr("xlink:href", "floor" + floor + ".jpg");
       heatmapData = [];
-      for(var x = 0; x < 50; x++) {
+      for (var x = 0; x < 50; x++) {
         heatmapData.push(newDataPoint());
       }
-      createHeatMap()
+      createHeatMap();
     }
-
-
 
     function newDataPoint() {
-      x = Math.random() * 220 + 40
-      y = Math.random() * 320 + 20;
-      intensity = Math.random() * .5 + .5;
-      return {x: x, y: y, intensity: intensity}
+      var x = Math.random() * 220 + 40;
+      var y = Math.random() * 320 + 20;
+      var intensity = Math.random() * 0.5 + 0.5;
+      return { x: x, y: y, intensity: intensity };
     }
 
-
     function createHeatMap() {
-      svg.selectAll("svg circle")
-        .remove()
+      svg.selectAll("svg circle").remove();
       // Create the heatmap
       svg.selectAll("svg circle")
         .data(heatmapData)
@@ -260,7 +254,8 @@
         .style("fill", function(d) { return d3.interpolateYlOrRd(d.intensity); })
         .style("opacity", 0.7); // adjust the opacity as needed
     }
-    createHeatMap()
+
+    createHeatMap();
   </script>
 </body>
 </html>
